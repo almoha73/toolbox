@@ -5,16 +5,13 @@ import { translateWeatherDescription } from "../../utils/weatherUtils";
 // page meteo en utilisant typescript
 
 const Meteo = () => {
-  const [city, setCity] = useState("");
-
-  const [temperature, setTemperature] = useState<number | null>(null);
-  let [description, setDescription] = useState<string | undefined>("");
-
-  const [icon, setIcon] = useState(null);
-  const [searchedCity, setSearchedCity] = useState("");
-  const [lastSearchedCity, setLastSearchedCity] = useState("");
-
-  const [searchedWeather, setSearchedWeather] = useState<{
+  const [city, setCity] = useState("");  // ville de l'utilisateur
+  const [temperature, setTemperature] = useState<number | null>(null); // température de la ville de l'utilisateur
+  let [description, setDescription] = useState<string | undefined>(""); // description de la météo de la ville de l'utilisateur
+  const [icon, setIcon] = useState(null); // icone de la météo de la ville de l'utilisateur
+  const [searchedCity, setSearchedCity] = useState(""); // ville tapée dans le champ de recherche
+  const [lastSearchedCity, setLastSearchedCity] = useState(""); // dernière ville tapée dans le champ de recherche
+  const [searchedWeather, setSearchedWeather] = useState<{ // météo de la ville tapée dans le champ de recherche
     temperature: number | null;
     description: string | undefined;
     icon: string | null;
@@ -24,6 +21,7 @@ const Meteo = () => {
     icon: null,
   });
 
+  // Récupération de la météo de la ville tapée dans le champ de recherche
   const fetchSearchedWeather = async () => {
     const apiKey = "1e13ef02fc68057b2d90d17a5fbe1a22";
     const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${searchedCity}&appid=${apiKey}&units=metric`;
@@ -47,6 +45,7 @@ const Meteo = () => {
     }
   };
 
+  // Récupération de la ville de l'utilisateur
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
