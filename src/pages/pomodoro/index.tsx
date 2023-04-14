@@ -78,7 +78,7 @@ const Timer = () => {
           </button>
         </div>
       </div>
-      <Link href="/timer/repos" className="text-4xl mt-8 border px-4 py-2">
+      <Link href="/pomodoro/repos" className="text-4xl mt-8 border px-4 py-2">
         Temps de repos
       </Link>
     </div>
