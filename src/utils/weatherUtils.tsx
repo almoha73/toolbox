@@ -8,6 +8,8 @@ export const translateWeatherDescription = (description: string) => {
         return "nuages épars";
       case "broken clouds":
         return "nuages brisés";
+      case "overcast clouds":
+        return "nuages couverts";
       case "shower rain":
         return "pluie de bruine";
       case "rain":

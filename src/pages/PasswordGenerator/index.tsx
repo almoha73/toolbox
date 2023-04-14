@@ -1,8 +1,11 @@
+import Navbar from '@/components/Navbar'
 import React from 'react'
 
 const PasswordGenerator = () => {
   return (
-    <div>index</div>
+    <>
+    <Navbar />
+    </>
   )
 }
 
