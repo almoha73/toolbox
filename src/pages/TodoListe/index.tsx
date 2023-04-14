@@ -50,7 +50,7 @@ const TodoListe = () => {
 
   return (
     <div
-      className="flex flex-col items-center my-8 p-4  min-h-screen w-full "
+      className="flex flex-col items-center p-4  min-h-screen w-full "
       style={{
         backgroundImage: `url("/images/marissa-grootes-vdaJJbls3xE-unsplash.jpg")`,
         backgroundRepeat: "no-repeat",
@@ -74,7 +74,7 @@ const TodoListe = () => {
           Ajouter
         </button>
       </div>
-      <ul className=" md:w-1/2">
+      <ul className=" md:w-1/2 w-full">
         {todos.map((todo, index) => (
           <div
             key={index}
