@@ -87,64 +87,69 @@ const Meteo = () => {
 
 	return (
 		<>
-			<Navbar />
-			<h1 className="text-3xl font-bold p-4 text-center mt-8">Météo</h1>
-			<div className="flex flex-col items-center mb-4">
-				<h1>{city}</h1>
-				{temperature && <p>{temperature} °C</p>}
-				<p>{description}</p>
-				{icon && (
-					<Image
-						src={`http://openweathermap.org/img/w/${icon}.png`}
-						alt="weather icon"
-						width={100}
-						height={100}
-					/>
-				)}
-			</div>
-
-			<div className="flex flex-col items-center mb-4 w-full">
-				{lastSearchedCity ? (
-					<>
-						<h1>{lastSearchedCity}</h1>
-						{searchedWeather.temperature && (
-							<p>{searchedWeather.temperature} °C</p>
-						)}
-						<p>
-							{translateWeatherDescription(searchedWeather.description ?? "")}
-						</p>
+		<div className="w-full min-h-screen bg-lime-50">
+		<Navbar />
+			<main className="">
+				<h1 className="text-3xl font-bold p-4 text-center mt-20">Météo</h1>
+				<div className="flex flex-col items-center mb-4">
+					<h1>{city}</h1>
+					{temperature && <p>{temperature} °C</p>}
+					<p>{description}</p>
+					{icon && (
 						<Image
-							src={`http://openweathermap.org/img/w/${searchedWeather.icon}.png`}
+							src={`http://openweathermap.org/img/w/${icon}.png`}
 							alt="weather icon"
 							width={100}
 							height={100}
 						/>
-					</>
-				) : (
-					""
-				)}
-			</div>
-
-			{/** champ de recherche pour afficher la météo d'autres ville*/}
-			<div className="flex flex-col items-center w-full ">
-				<div className="flex flex-col items-center justify-center w-1/2">
-					<input
-						type="text"
-						className="lg:w-1/2 p-2 mb-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-						placeholder="Ville"
-						value={searchedCity}
-						onChange={(e) => {
-							setSearchedCity(e.target.value);
-						}}
-					/>
-					<button
-						className="lg:w-1/4 p-2 mb-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50"
-						onClick={fetchSearchedWeather}
-					>
-						Rechercher
-					</button>
+					)}
 				</div>
-			</div>
+
+				<div className="flex flex-col items-center mb-4 w-full">
+					{lastSearchedCity ? (
+						<>
+							<h1>{lastSearchedCity}</h1>
+							{searchedWeather.temperature && (
+								<p>{searchedWeather.temperature} °C</p>
+							)}
+							<p>
+								{translateWeatherDescription(searchedWeather.description ?? "")}
+							</p>
+							<Image
+								src={`http://openweathermap.org/img/w/${searchedWeather.icon}.png`}
+								alt="weather icon"
+								width={100}
+								height={100}
+							/>
+						</>
+					) : (
+						""
+					)}
+				</div>
+
+				{/** champ de recherche pour afficher la météo d'autres ville*/}
+				<div className="flex flex-col items-center w-full ">
+					<div className="flex flex-col items-center justify-center w-1/2">
+						<input
+							type="text"
+							className="lg:w-1/2 p-2 mb-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+							placeholder="Ville"
+							value={searchedCity}
+							onChange={(e) => {
+								setSearchedCity(e.target.value);
+							}}
+						/>
+						<button
+							className="lg:w-1/4 p-2 mb-4 bg-amber-900 text-white rounded-lg hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-700 focus:ring-opacity-50"
+							onClick={fetchSearchedWeather}
+						>
+							Rechercher
+						</button>
+					</div>
+				</div>
+			</main>
+		</div>
+			
 		</>
 	);
 };

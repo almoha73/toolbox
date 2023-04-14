@@ -1,4 +1,8 @@
+const { fontFamily } = require('tailwindcss/defaultTheme')
+
 /** @type {import('tailwindcss').Config} */
+
+
 module.exports = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx}',
@@ -11,6 +15,11 @@ module.exports = {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+      },
+      fontFamily: {
+        sans: ['var(--font-inter)', ...fontFamily.sans],
+        sedgwick: ['var(--font-sedgwick)', ...fontFamily.sans],
+        roboto: ['var(--font-roboto)', ...fontFamily.sans],
       },
     },
   },
