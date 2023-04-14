@@ -55,7 +55,7 @@ const Chronometre = () => {
   const formattedTime = `${h} : ${m} : ${s}`;
 
   return (
-    <div className="bg-gray-800 bg-gradient-to-br from-gray-500 via-gray-700 to-gray-500 h-auto p-6 rounded-xl flex flex-col justify-center items-center">
+    <div className="bg-gray-800 bg-gradient-to-br from-gray-500 via-gray-700 to-gray-500 h-auto py-6 px-8 rounded-xl flex flex-col justify-center items-center">
       <h1 className="text-center text-4xl font-bold mb-4 text-white">
         Chronomètre
       </h1>

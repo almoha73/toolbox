@@ -51,7 +51,7 @@ const Minuteur = () => {
 
   return (
     <>
-      <div className="bg-gray-800 bg-gradient-to-br from-gray-500 via-gray-700 to-gray-500 h-auto p-6 rounded-xl flex flex-col justify-center items-center">
+      <div className="bg-gray-800 bg-gradient-to-br from-gray-500 via-gray-700 to-gray-500 h-auto p-4 rounded-xl flex flex-col justify-center items-center ">
         <h1 className="text-4xl font-bold mb-4 text-white">Minuteur</h1>
         <div className="flex space-x-4 mb-4">
           <input
