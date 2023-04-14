@@ -77,7 +77,7 @@ const Repos = () => {
           </button>
         </div>
       </div>
-      <Link href="/timer" className="text-4xl mt-8 border px-4 py-2">Pomodoro</Link>
+      <Link href="/pomodoro" className="text-4xl mt-8 border px-4 py-2">Pomodoro</Link>
     </div>
   );
 };
