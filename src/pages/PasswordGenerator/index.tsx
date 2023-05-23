@@ -3,14 +3,6 @@ import Modal from "@/components/Modal";
 import Navbar from "@/components/Navbar";
 import React from "react";
 
-// créer un générateur de mot de passe
-// 1. créer un formulaire avec un input pour la longueur du mot de passe
-// 2. créer un bouton pour générer le mot de passe
-// 3. créer un state pour stocker le mot de passe
-// 4. créer une fonction pour générer le mot de passe
-// 5. créer une fonction pour copier le mot de passe dans le presse papier
-// 6. créer la possibilité de générer un mot de passe avec des lettres minuscules, majuscules, des chiffres et des caractères spéciaux
-// 7. créer la possibilité de choisir la longueur du mot de passe
 
 const PasswordGenerator = () => {
   const [password, setPassword] = React.useState<string>("");
@@ -79,8 +71,8 @@ const PasswordGenerator = () => {
       <div className="flex flex-col w-full min-h-screen ">
         <Navbar />
         <main className="bg-black flex-1 flex items-center z-10">
-          <div className="bg-gray-800 bg-gradient-to-br from-gray-500 via-gray-700 to-gray-500 border-2 h-auto mt-32 p-6 flex flex-col justify-center items-center md:w-10/12 mx-auto rounded-full text-red-400">
-            <h1 className="text-center text-4xl md:text-2xl font-bold mb-4 ">
+          <div className="bg-gray-800 bg-gradient-to-br from-gray-500 via-gray-700 to-gray-500 border-2 h-auto mt-20 p-6 flex flex-col justify-center items-center w-11/12 md:w-10/12 mx-auto lg:rounded-full text-red-400">
+            <h1 className="text-center text-2xl lg:text-4xl md:text-2xl font-bold mb-4 ">
               Générateur de mot de passe
             </h1>
             <div className="flex flex-col items-center justify-center gap-4">

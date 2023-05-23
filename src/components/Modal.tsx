@@ -23,8 +23,8 @@ interface ModalProps {
   
     return (
       <div className="fixed top-0 left-0 right-0 bottom-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
-        <div className="bg-white rounded-xl p-8">
-          <p className="text-center text-2xl font-bold">{title}</p>
+        <div className="bg-white rounded-xl lg:p-8 p-4">
+          <p className="text-center lg:text-2xl text-lg font-bold">{title}</p>
         </div>
       </div>
     );
