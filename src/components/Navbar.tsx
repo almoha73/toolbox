@@ -7,6 +7,7 @@ import {
 	SunIcon,
 	KeyIcon,
 	XMarkIcon,
+	CalculatorIcon,
 } from "@heroicons/react/24/outline";
 import {
 	ChevronDownIcon,
@@ -44,9 +45,15 @@ const Toolbox = [
 	{
 		name: "Minuteur et Chronomètre",
 		description: "Vous pouvez gérer votre temps",
-		href: "MinuteurChronometre",
+		href: "/MinuteurChronometre",
 		icon: ClockIcon,
 	},
+	{
+		name: "Calculatrice",
+		description: "Vous pouvez faire des calculs",
+		href: "/calculatrice",
+		icon: CalculatorIcon,
+	}
 ];
 
 function classNames(...classes: string[]) {
@@ -57,9 +64,9 @@ export default function Example() {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 	return (
-		<header className="bg-white w-full fixed top-0">
+		<header className="rust-bg w-full fixed top-0 z-20 text-white">
 			<nav
-				className="mx-auto flex items-center justify-between p-6 lg:px-8"
+				className="mx-auto flex items-center justify-between p-6 lg:px-8 "
 				aria-label="Global"
 			>
 				<div className="flex lg:flex-1">
@@ -84,16 +91,16 @@ export default function Example() {
 						<Bars3Icon className="h-6 w-6" aria-hidden="true" />
 					</button>
 				</div>
-				<Popover.Group className="hidden lg:flex lg:gap-x-12">
+				<Popover.Group className="hidden lg:flex lg:gap-x-12 ">
 					<Link
 						href="/"
-						className="text-sm font-semibold leading-6 text-gray-900"
+						className="text-sm font-semibold leading-6"
 					>
 						Accueil
 					</Link>
 
 					<Popover className="relative">
-						<Popover.Button className="flex items-center gap-x-1 text-sm font-semibold leading-6 text-gray-900">
+						<Popover.Button className="flex items-center gap-x-1 text-sm font-semibold leading-6">
 							Toolbox
 							<ChevronDownIcon
 								className="h-5 w-5 flex-none text-gray-400"
@@ -110,8 +117,8 @@ export default function Example() {
 							leaveFrom="opacity-100 translate-y-0"
 							leaveTo="opacity-0 translate-y-1"
 						>
-							<Popover.Panel className="absolute -left-8 top-full z-10 mt-3 w-screen max-w-md overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-gray-900/5">
-								<div className="p-4">
+							<Popover.Panel className="absolute -left-8 top-full mt-3 w-screen max-w-md overflow-hidden rounded-3xl bg-white shadow-lg ring-1 ring-gray-900/5 ">
+								<div className="p-4 ">
 									{Toolbox.map((item) => (
 										<div
 											key={item.name}
@@ -123,7 +130,7 @@ export default function Example() {
 													aria-hidden="true"
 												/>
 											</div>
-											<div className="flex-auto">
+											<div className="flex-auto ">
 												<Link
 													href={item.href}
 													className="block font-semibold text-gray-900"
@@ -142,7 +149,7 @@ export default function Example() {
 					</Popover>
 					<Link
 						href="/contact"
-						className="text-sm font-semibold leading-6 text-gray-900"
+						className="text-sm font-semibold leading-6 "
 					>
 						Contact
 					</Link>
@@ -150,7 +157,7 @@ export default function Example() {
 				<div className="hidden lg:flex lg:flex-1 lg:justify-end">
 					<Link
 						href="/login"
-						className="text-sm font-semibold leading-6 text-gray-900"
+						className="text-sm font-semibold leading-6 "
 					>
 						Log in <span aria-hidden="true">&rarr;</span>
 					</Link>
@@ -158,7 +165,7 @@ export default function Example() {
 			</nav>
 			<Dialog
 				as="div"
-				className="lg:hidden"
+				className="lg:hidden "
 				open={mobileMenuOpen}
 				onClose={setMobileMenuOpen}
 			>
@@ -212,7 +219,7 @@ export default function Example() {
 													aria-hidden="true"
 												/>
 											</Disclosure.Button>
-											<Disclosure.Panel className="mt-2 space-y-2">
+											<Disclosure.Panel className="mt-2 space-y-2  ">
 												{[...Toolbox].map((item) => (
 													<Disclosure.Button
 														key={item.name}

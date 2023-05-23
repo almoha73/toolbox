@@ -17,9 +17,10 @@ module.exports = {
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
       fontFamily: {
-        sans: ['var(--font-inter)', ...fontFamily.sans],
-        sedgwick: ['var(--font-sedgwick)', ...fontFamily.sans],
-        roboto: ['var(--font-roboto)', ...fontFamily.sans],
+        'sans': ['Roboto', 'sans-serif'],
+        'titillium': ['Titillium Web', 'sans-serif'],
+        'slab': ['Roboto Slab', 'serif'],
+      
       },
     },
   },
