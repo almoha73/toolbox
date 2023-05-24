@@ -162,7 +162,7 @@ const Meteo = () => {
 
   return (
     <>
-      <div className="w-full min-h-screen bg-black text-white">
+      <div className="w-full min-h-screen bg-gray-800 bg-gradient-to-br from-gray-500 via-gray-700 to-gray-500 text-white">
         <Navbar />
         <main className="">
           <div>
@@ -170,11 +170,11 @@ const Meteo = () => {
               Météo des 6 prochaines heures à <span>{city}</span>
             </h1>
             <div className="items-center mb-4">
-              <div className="grid grid-cols-3 gap-4 w-11/12 mx-auto text-black">
+              <div className="grid grid-cols-3 gap-4 w-11/12 mx-auto text-white">
                 {sixHourWeather.map((weatherItem, index) => (
                   <div
                     key={index}
-                    className="flex flex-col items-center mb-4 border-2 bg-teal-100 p-3 rounded-lg shadow-lg "
+                    className="flex flex-col items-center mb-4  relative glass-effect p-3 rounded-lg shadow-lg "
                   >
                     <p>{weatherItem.heure} h</p>
                     {weatherItem.temperature && (
@@ -202,7 +202,7 @@ const Meteo = () => {
                 {weather.map((weatherItem, index) => (
                   <div
                     key={index}
-                    className="flex flex-col items-center mb-4 border-2 bg-teal-100 p-3 rounded-lg shadow-lg "
+                    className="flex flex-col items-center mb-4 border-2 glass-effect text-white p-3 rounded-lg shadow-lg "
                   >
                     {/**remplacer le premier wheatherItem.jour par "aujourd'hui et le deuxième par "demain"*/}
 

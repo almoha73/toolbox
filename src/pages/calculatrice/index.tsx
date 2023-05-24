@@ -105,9 +105,7 @@ export default function Calculator() {
               <button className="border p-2" onClick={() => handleDelete()}>
                 DEL
               </button>
-              <button className="border p-2" onClick={() => handleClick("+")}>
-                +
-              </button>
+
               <button className="border p-2" onClick={() => handlePercent()}>
                 %
               </button>
