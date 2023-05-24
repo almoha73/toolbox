@@ -19,8 +19,8 @@ export default function Calculator() {
 
     // si les chiffres après la virgule sont égaux à 0, on les supprime
     if (equal.slice(-3) === "000") {
-        setDisplay(String(Number(equal.slice(0, -3))));
-        return;
+      setDisplay(String(Number(equal.slice(0, -3))));
+      return;
     }
     setDisplay(String(equal));
   }
@@ -110,6 +110,9 @@ export default function Calculator() {
               </button>
               <button className="border p-2" onClick={() => handlePercent()}>
                 %
+              </button>
+              <button className="border p-2" onClick={() => handleNegative()}>
+                +/-
               </button>
             </div>
           </div>
