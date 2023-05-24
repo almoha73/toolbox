@@ -170,7 +170,7 @@ const Meteo = () => {
               Météo des 6 prochaines heures à <span>{city}</span>
             </h1>
             <div className="items-center mb-4">
-              <div className="grid grid-cols-3 gap-4 w-11/12 mx-auto text-white">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 w-11/12 mx-auto text-white">
                 {sixHourWeather.map((weatherItem, index) => (
                   <div
                     key={index}

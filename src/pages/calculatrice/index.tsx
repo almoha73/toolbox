@@ -1,20 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 
 export default function Calculator() {
   const [display, setDisplay] = useState("");
 
-  const handleClick = (val: string) => {
-    setDisplay((prevDisplay) => prevDisplay + val);
-  };
+  // const handleClick = (val: string) => {
+  //   setDisplay((prevDisplay) => prevDisplay + val);
+  // };
 
   const handleClear = () => {
     setDisplay("");
   };
 
-  // TODO: Implement handleEquals, handleDelete, handleNegative, handlePercent avec typescript
+  const handleDelete = useCallback(() => {
+    setDisplay((prevDisplay) => prevDisplay.slice(0, -1));
+  }, []);
 
-  function handleEquals() {
+  function handleNegative() {
+    setDisplay(String(Number(display) * -1));
+  }
+
+  const handlePercent = useCallback(() => {
+    setDisplay(String(Number(display) / 100));
+  }, [display]);
+
+  const handleEquals = useCallback(() => {
     const equal = eval(display).toFixed(3);
 
     // si les chiffres après la virgule sont égaux à 0, on les supprime
@@ -23,20 +33,56 @@ export default function Calculator() {
       return;
     }
     setDisplay(String(equal));
-  }
-  console.log(display);
-  function handleDelete() {
-    if (typeof display !== "string" || display === "") return;
-    setDisplay(display.slice(0, -1));
-  }
+  }, [display]);
 
-  function handleNegative() {
-    setDisplay(String(Number(display) * -1));
-  }
+  const handleClick = useCallback((val: string) => {
+    setDisplay((prevDisplay) => prevDisplay + val);
+  }, []);
 
-  function handlePercent() {
-    setDisplay(String(Number(display) / 100));
-  }
+  // Gestionnaire d'événements de clavier
+  useEffect(() => {
+    const handleKeyDown = (event: any) => {
+      switch (event.key) {
+        case "0":
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
+        case "+":
+        case "-":
+        case "*":
+        case "/":
+        case ".":
+          handleClick(event.key);
+          break;
+        case "Enter":
+          handleEquals();
+          break;
+        case "Backspace":
+          handleDelete();
+          break;
+        case "%":
+          handlePercent();
+          break;
+        // TODO: add more cases if necessary
+        default:
+          break;
+      }
+    };
+
+    // Ajoutez le gestionnaire d'événements au document
+    document.addEventListener("keydown", handleKeyDown);
+
+    // Nettoyez l'événement lorsque le composant est démonté
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleDelete, handleEquals, handlePercent, handleClick]);
 
   return (
     <div className="calculator w-full min-h-screen  text-red-400">
@@ -52,7 +98,6 @@ export default function Calculator() {
               <button className="border p-2" onClick={() => handleClick("1")}>
                 1
               </button>
-
               <button className="border p-2" onClick={() => handleClick("2")}>
                 2
               </button>
@@ -68,7 +113,6 @@ export default function Calculator() {
               <button className="border p-2" onClick={() => handleClick("5")}>
                 5
               </button>
-
               <button className="border p-2" onClick={() => handleClick("6")}>
                 6
               </button>
