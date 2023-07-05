@@ -1,58 +1,47 @@
-import React, { useState, useEffect, useRef } from "react";
-
-// page Chronomètre
+import React, { useState, useEffect } from "react";
 
 const Chronometre = () => {
-  // state pour le chronomètre
-  const [seconds, setSeconds] = useState<number>(0);
-  const [minutes, setMinutes] = useState<number>(0);
-  const [hours, setHours] = useState<number>(0);
-  const [intervalId, setIntervalId] = useState<any>(null);
-  const [isRunning, setIsRunning] = useState(false);
+  const [time, setTime] = useState<number>(0);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
 
-  // fonction start
-  const start = () => {
-    if (isRunning) return;
-    setIntervalId(
-      setInterval(() => {
-        setSeconds((seconds) => seconds + 1);
-        if (seconds === 59) {
-          setSeconds(0);
-          setMinutes((minutes) => minutes + 1);
-        }
-        if (minutes === 59) {
-          setMinutes(0);
-          setHours((hours) => hours + 1);
-        }
-      }, 1000)
-    );
+  const start = (): void => {
     setIsRunning(true);
   };
 
-  // fonction stop
-  const stop = () => {
-    clearInterval(intervalId);
+  const stop = (): void => {
     setIsRunning(false);
   };
 
-  // fonction reset
-  const reset = () => {
+  const reset = (): void => {
+    setTime(0);
     setIsRunning(false);
-    setSeconds(0);
-    setMinutes(0);
-    setHours(0);
   };
-  // Formatage des secondes pour que l'affichage soit toujours de 2 chiffres
-  const s = String(seconds).padStart(2, "0");
 
-  // Formatage des minutes pour que l'affichage soit toujours de 2 chiffres
-  const m = String(minutes).padStart(2, "0");
+  const formatTime = (time: number) => {
+    const h = Math.floor(time / 3600).toString().padStart(2, "0");
+    const m = Math.floor((time % 3600) / 60).toString().padStart(2, "0");
+    const s = (time % 60).toString().padStart(2, "0");
 
-  // Formatage de l'heure pour que l'affichage soit toujours de 2 chiffres
-  const h = String(hours).padStart(2, "0");
+    return `${h}:${m}:${s}`;
+  };
 
-  // Formatage de l'heure
-  const formattedTime = `${h} : ${m} : ${s}`;
+  useEffect(() => {
+    let interval: ReturnType<typeof setTimeout> | null = null;
+    if (isRunning) {
+      interval = setInterval(() => {
+        setTime((prevTime) => prevTime + 1);
+      }, 1000);
+    } else if (!isRunning && time !== 0) {
+      if (interval) clearInterval(interval);
+    }
+
+    return () => {
+      if(interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isRunning, time]);
+
 
   return (
     <div className="bg-gray-800 bg-gradient-to-br from-gray-500 via-gray-700 to-gray-500 h-auto py-6 px-8 rounded-xl flex flex-col justify-center items-center">
@@ -62,7 +51,7 @@ const Chronometre = () => {
 
       <div className="text-center">
         <span className="inline-block bg-blue-500 text-white px-4 py-2 rounded-lg text-4xl mb-4">
-          {formattedTime}
+          {formatTime(time)}
         </span>
         <div className="flex items-center justify-center">
           <button
