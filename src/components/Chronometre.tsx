@@ -1,81 +1,77 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { Play, Pause, RotateCcw, Clock } from "lucide-react";
 
-const Chronometre = () => {
-  const [time, setTime] = useState<number>(0);
-  const [isRunning, setIsRunning] = useState<boolean>(false);
+export default function Chronometre() {
+  const [time, setTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const startTimeRef = useRef<number | null>(null);
 
-  const start = (): void => {
-    setIsRunning(true);
-  };
+  const start = () => setIsRunning(true);
+  const stop = () => setIsRunning(false);
 
-  const stop = (): void => {
-    setIsRunning(false);
-  };
-
-  const reset = (): void => {
+  const reset = () => {
     setTime(0);
     setIsRunning(false);
+    startTimeRef.current = null;
   };
 
-  const formatTime = (time: number) => {
-    const h = Math.floor(time / 3600).toString().padStart(2, "0");
-    const m = Math.floor((time % 3600) / 60).toString().padStart(2, "0");
-    const s = (time % 60).toString().padStart(2, "0");
-
-    return `${h}:${m}:${s}`;
+  const formatTime = (t: number) => {
+    const h = Math.floor(t / 3600);
+    const m = Math.floor((t % 3600) / 60);
+    const s = t % 60;
+    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
   useEffect(() => {
-    let interval: ReturnType<typeof setTimeout> | null = null;
+    let interval: ReturnType<typeof setInterval>;
     if (isRunning) {
-      interval = setInterval(() => {
-        setTime((prevTime) => prevTime + 1);
-      }, 1000);
-    } else if (!isRunning && time !== 0) {
-      if (interval) clearInterval(interval);
-    }
-
-    return () => {
-      if(interval) {
-        clearInterval(interval);
+      if (!startTimeRef.current) {
+        startTimeRef.current = Date.now() - time * 1000;
       }
-    };
+      interval = setInterval(() => {
+        setTime(Math.floor((Date.now() - startTimeRef.current!) / 1000));
+      }, 1000);
+    } else {
+      startTimeRef.current = null;
+    }
+    return () => clearInterval(interval);
   }, [isRunning, time]);
 
-
   return (
-    <div className="bg-gray-800 bg-gradient-to-br from-gray-500 via-gray-700 to-gray-500 h-auto py-6 px-8 rounded-xl flex flex-col justify-center items-center">
-      <h1 className="text-center text-4xl font-bold mb-4 text-white">
-        Chronomètre
-      </h1>
+    <div className="bg-neutral-900/40 backdrop-blur-xl border border-neutral-800 rounded-[2rem] p-8 shadow-2xl flex flex-col h-full items-center text-center max-h-[500px]">
+      <div className="self-start flex items-center gap-3 mb-12 text-neutral-300">
+        <div className="bg-indigo-500/20 p-2 rounded-lg text-indigo-400">
+          <Clock className="w-5 h-5" />
+        </div>
+        <h2 className="text-xl font-semibold">Chronomètre</h2>
+      </div>
 
-      <div className="text-center">
-        <span className="inline-block bg-blue-500 text-white px-4 py-2 rounded-lg text-4xl mb-4">
+      <div className="flex-1 flex flex-col items-center justify-center w-full">
+        <div className="text-6xl sm:text-7xl font-bold font-mono tracking-tight tabular-nums mb-16 bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent">
           {formatTime(time)}
-        </span>
-        <div className="flex items-center justify-center">
+        </div>
+
+        <div className="flex items-center gap-4">
           <button
-            onClick={start}
-            className="ml-2 px-4 py-2 border-2 border-blue-500 rounded-lg text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            onClick={isRunning ? stop : start}
+            className={`flex items-center gap-2 px-8 py-4 rounded-2xl font-semibold transition-all duration-300 \${
+              isRunning 
+                ? "bg-neutral-800 text-white hover:bg-neutral-700 hover:scale-105" 
+                : "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25 hover:bg-indigo-500 hover:scale-105"
+            }`}
           >
-            Start
+            {isRunning ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
           </button>
-          <button
-            onClick={stop}
-            className="ml-2 px-4 py-2 border-2 border-blue-500 rounded-lg text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Stop
-          </button>
+
           <button
             onClick={reset}
-            className="ml-2 px-4 py-2 border-2 border-blue-500 rounded-lg text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="p-4 rounded-2xl bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-all hover:scale-105"
+            aria-label="Reset"
           >
-            Reset
+            <RotateCcw className="w-5 h-5" />
           </button>
         </div>
       </div>
     </div>
   );
-};
-
-export default Chronometre;
+}

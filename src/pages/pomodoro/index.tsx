@@ -1,93 +1,159 @@
+import React, { useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
-import React, { useEffect } from "react";
+import { motion } from "framer-motion";
+import { Timer, Play, Square, RotateCcw, Coffee } from "lucide-react";
 
-const Timer = () => {
-	const [time, setTime] = React.useState(900);
+export default function Pomodoro() {
+	const [time, setTime] = React.useState(1500); // Default to 25 min (1500s)
 	const [timeStart, setTimeStart] = React.useState(false);
 
 	const buttons = [
-		{
-			value: 60,
-			display: "15 min",
-		},
-		{
-			value: 1500,
-			display: "25 min",
-		},
-		{
-			value: 1800,
-			display: "30 min",
-		},
+		{ value: 900, display: "15 min" },
+		{ value: 1500, display: "25 min" },
+		{ value: 1800, display: "30 min" },
 	];
 
-	const toggleTimer = () => {
-		setTimeStart(!timeStart);
-	};
+	const toggleTimer = () => setTimeStart(!timeStart);
 
 	useEffect(() => {
-		const bell = new Audio("/assets/bell.mp3");
+		// Only access audio on client side
+		let bell: HTMLAudioElement | null = null;
+		if (typeof window !== "undefined") {
+			bell = new Audio("/assets/bell.mp3");
+		}
+
 		const interval = setInterval(() => {
 			if (timeStart) {
-				if (time > 0) {
-					setTime(time - 1);
-				} else if (time === 0) {
-					bell.play();
-					clearInterval(interval);
-				}
+				setTime((prevTime) => {
+					if (prevTime > 0) {
+						return prevTime - 1;
+					} else {
+						bell?.play().catch(e => console.error("Audio play failed:", e));
+						setTimeStart(false);
+						return 0;
+					}
+				});
 			}
 		}, 1000);
+
 		return () => clearInterval(interval);
-	}, [timeStart, time]);
+	}, [timeStart]);
 
 	const resetTimer = () => {
-		setTime(900);
+		setTime(1500);
 		setTimeStart(false);
 	};
 
-	const formatTime = (time: number) => {
-		let minutes: string | number = Math.floor(time / 60);
-		let seconds: string | number = time - minutes * 60;
-		seconds = seconds < 10 ? `0${seconds}` : seconds;
-		minutes = minutes < 10 ? `0${minutes}` : minutes;
-		return `${minutes}:${seconds}`;
+	const formatTime = (totalSeconds: number) => {
+		const minutes = Math.floor(totalSeconds / 60);
+		const seconds = totalSeconds % 60;
+		return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 	};
 
+	const progress = ((1500 - time) / 1500) * 100;
+
 	return (
-		<>
+		<div className="min-h-screen bg-neutral-950 text-neutral-50 font-sans md:pt-20 pt-16 flex flex-col relative overflow-hidden">
+			<div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-rose-500/10 rounded-full blur-[100px] pointer-events-none" />
 			<Navbar />
-			<div className="w-full min-h-screen bg-black text-red-400 flex flex-col items-center justify-center">
-				<h1 className="text-5xl mb-8">POMODORO</h1>
-				<div className="bg-gray-800 bg-gradient-to-br from-gray-500 via-gray-700 to-gray-500 flex flex-col items-center lg:w-96 border-2 lg:h-96 justify-center lg:rounded-full p-2 md:p-6">
-					<div className="w-68 mb-8 flex justify-center items-center gap-4">
+
+			<main className="flex-1 flex flex-col items-center justify-center p-6 z-10 w-full max-w-2xl mx-auto">
+				<motion.div
+					initial={{ opacity: 0, y: 20 }}
+					animate={{ opacity: 1, y: 0 }}
+					className="w-full bg-neutral-900/40 backdrop-blur-xl border border-neutral-800 rounded-[3rem] p-10 flex flex-col items-center shadow-2xl relative overflow-hidden"
+				>
+					<div className="absolute top-0 left-0 w-full h-1 bg-neutral-800">
+						<motion.div
+							className="h-full bg-rose-500"
+							initial={{ width: "0%" }}
+							animate={{ width: `${timeStart ? 100 : 0}%` }}
+							transition={{ duration: timeStart ? time : 0.3, ease: "linear" }}
+						/>
+					</div>
+
+					<div className="flex items-center gap-3 mb-10 text-rose-500">
+						<Timer className="w-8 h-8" />
+						<h1 className="text-3xl font-bold text-white tracking-tight">Pomodoro</h1>
+					</div>
+
+					<div className="flex flex-wrap justify-center gap-3 mb-12">
 						{buttons.map((button, index) => (
 							<button
 								key={index}
-								onClick={() => setTime(button.value)}
-								className="border p-4"
+								onClick={() => {
+									setTime(button.value);
+									setTimeStart(false);
+								}}
+								className={`px-6 py-2.5 rounded-full font-medium transition-all duration-300 \${
+                  time === button.value && !timeStart
+                    ? "bg-rose-500 text-white shadow-lg shadow-rose-500/25"
+                    : "bg-neutral-800/80 text-neutral-300 hover:bg-neutral-700 hover:text-white"
+                }`}
 							>
 								{button.display}
 							</button>
 						))}
 					</div>
-					<div className="w-40 text-center mb-8 text-5xl">
-						{formatTime(time)}
-					</div>
-					<div className="flex">
-						<button onClick={toggleTimer} className="block w-28 mr-6 border">
-							{timeStart ? "Stop" : "Start"}
-						</button>
-						<button onClick={resetTimer} className="block w-28  border">
-							Reset
-						</button>
-					</div>
-				</div>
-				<Link href="/pomodoro/repos" className="text-4xl mt-8 border px-4 py-2">
-					Temps de repos
-				</Link>
-			</div>
-		</>
-	);
-};
 
-export default Timer;
+					<div className="relative mb-12 group">
+						<div className="absolute inset-0 bg-rose-500/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-full" />
+						<motion.div
+							animate={{ scale: timeStart ? [1, 1.02, 1] : 1 }}
+							transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+							className="text-8xl md:text-[8rem] font-bold tabular-nums tracking-tighter bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent relative"
+						>
+							{formatTime(time)}
+						</motion.div>
+					</div>
+
+					<div className="flex items-center gap-6 mb-8">
+						<button
+							onClick={toggleTimer}
+							className={`flex items-center gap-2 px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 \${
+                timeStart 
+                  ? "bg-neutral-800 text-white hover:bg-neutral-700 hover:scale-105" 
+                  : "bg-rose-500 text-white hover:bg-rose-400 hover:scale-105 shadow-xl shadow-rose-500/20"
+              }`}
+						>
+							{timeStart ? (
+								<>
+									<Square className="w-5 h-5 fill-current" />
+									Pause
+								</>
+							) : (
+								<>
+									<Play className="w-5 h-5 fill-current" />
+									Démarrer
+								</>
+							)}
+						</button>
+						<button
+							onClick={resetTimer}
+							className="flex items-center gap-2 p-4 rounded-2xl font-semibold bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-all duration-300 hover:scale-105"
+							aria-label="Réinitialiser"
+						>
+							<RotateCcw className="w-6 h-6" />
+						</button>
+					</div>
+				</motion.div>
+
+				<motion.div
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ delay: 0.2 }}
+					className="mt-8"
+				>
+					<Link
+						href="/pomodoro/repos"
+						className="flex items-center gap-2 px-6 py-3 rounded-full bg-indigo-500/10 text-indigo-400 font-medium hover:bg-indigo-500/20 transition-all duration-300 hover:-translate-y-1"
+					>
+						<Coffee className="w-5 h-5" />
+						Passer au mode repos
+					</Link>
+				</motion.div>
+			</main>
+		</div>
+	);
+}

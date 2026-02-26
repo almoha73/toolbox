@@ -1,59 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import "/public/font.css";
 
-.metallic-bg {
-  background-color: #dfe1e6;
-  background-image: linear-gradient(
-      45deg,
-      rgba(255, 255, 255, 0.05) 25%,
-      transparent 25%
-    ),
-    linear-gradient(-45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%),
-    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.05) 75%);
-  background-size: 40px 40px;
-  background-position: 0 0, 0 20px, 20px -20px, -20px 0px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-}
-
-.metallic-dark-bg {
-  background-color: #353535;
-  background-color: #1a1a1a;
-  background-image: radial-gradient(circle, #505050 5%, transparent 5%),
-    radial-gradient(circle, #505050 5%, transparent 5%);
-  background-size: 10px 10px;
-  background-position: 0 0, 5px 5px;
-  background-repeat: repeat;
-}
-
-.rust-bg {
-  background-color: #8b4513;
-  background-image: radial-gradient(
-    circle at top left,
-    #ff4500 0%,
-    #8b0000 100%
-  );
-}
-
-input:checked ~ .toggle__line {
-  background-color: #8b0000;
-}
-
-input:checked ~ .toggle__dot {
-  transform: translateX(150%);
-  background-color: #ff4500;
-}
-
-.glass-effect {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0)
-  );
-  backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  border-radius: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+@layer base {
+  body {
+    @apply bg-neutral-950 text-neutral-50;
+  }
 }

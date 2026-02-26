@@ -1,164 +1,164 @@
 import { useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/Navbar";
+import { motion } from "framer-motion";
+import { Calculator as CalcIcon, Delete, Equal, RotateCcw } from "lucide-react";
 
 export default function Calculator() {
   const [display, setDisplay] = useState("");
 
-  // const handleClick = (val: string) => {
-  //   setDisplay((prevDisplay) => prevDisplay + val);
-  // };
-
-  const handleClear = () => {
-    setDisplay("");
-  };
+  const handleClear = () => setDisplay("");
 
   const handleDelete = useCallback(() => {
-    setDisplay((prevDisplay) => prevDisplay.slice(0, -1));
+    setDisplay((prev) => prev.slice(0, -1));
   }, []);
 
-  function handleNegative() {
-    setDisplay(String(Number(display) * -1));
-  }
+  const handleNegative = () => {
+    if (display) {
+      if (display.startsWith("-")) {
+        setDisplay(display.slice(1));
+      } else {
+        setDisplay("-" + display);
+      }
+    }
+  };
 
   const handlePercent = useCallback(() => {
-    setDisplay(String(Number(display) / 100));
+    if (display) {
+      try {
+        const val = Number(evaluateExpression(display));
+        setDisplay(String(val / 100));
+      } catch (e) {
+        setDisplay("Erreur");
+      }
+    }
   }, [display]);
 
-  const handleEquals = useCallback(() => {
-    const equal = eval(display).toFixed(3);
+  const evaluateExpression = (expr: string) => {
+    // eslint-disable-next-line no-new-func
+    return new Function('return ' + expr)();
+  };
 
-    // si les chiffres après la virgule sont égaux à 0, on les supprime
-    if (equal.slice(-3) === "000") {
-      setDisplay(String(Number(equal.slice(0, -3))));
-      return;
+  const handleEquals = useCallback(() => {
+    if (!display) return;
+    try {
+      const result = evaluateExpression(display);
+      // Format number to avoid long decimals
+      const formatted = Number.isInteger(result)
+        ? String(result)
+        : Number(result).toFixed(4).replace(/\\.?0+$/, "");
+      setDisplay(formatted);
+    } catch (e) {
+      setDisplay("Erreur");
+      setTimeout(() => setDisplay(""), 1500);
     }
-    setDisplay(String(equal));
   }, [display]);
 
   const handleClick = useCallback((val: string) => {
-    setDisplay((prevDisplay) => prevDisplay + val);
+    setDisplay((prev) => {
+      if (prev === "Erreur") return val;
+      return prev + val;
+    });
   }, []);
 
-  // Gestionnaire d'événements de clavier
+  // Keyboard support
   useEffect(() => {
-    const handleKeyDown = (event: any) => {
-      switch (event.key) {
-        case "0":
-        case "1":
-        case "2":
-        case "3":
-        case "4":
-        case "5":
-        case "6":
-        case "7":
-        case "8":
-        case "9":
-        case "+":
-        case "-":
-        case "*":
-        case "/":
-        case ".":
-          handleClick(event.key);
-          break;
-        case "Enter":
-          handleEquals();
-          break;
-        case "Backspace":
-          handleDelete();
-          break;
-        case "%":
-          handlePercent();
-          break;
-        // TODO: add more cases if necessary
-        default:
-          break;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key;
+      if (/[0-9+*/.-]/.test(key)) {
+        handleClick(key === "*" ? "*" : key);
+      } else if (key === "Enter" || key === "=") {
+        handleEquals();
+      } else if (key === "Backspace") {
+        handleDelete();
+      } else if (key === "Escape") {
+        handleClear();
+      } else if (key === "%") {
+        handlePercent();
       }
     };
 
-    // Ajoutez le gestionnaire d'événements au document
-    document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleClick, handleEquals, handleDelete, handleClear, handlePercent]);
 
-    // Nettoyez l'événement lorsque le composant est démonté
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+  const Button = ({
+    onClick,
+    children,
+    variant = "default",
+    className = ""
+  }: {
+    onClick: () => void,
+    children: React.ReactNode,
+    variant?: "default" | "operator" | "action" | "equals",
+    className?: string
+  }) => {
+    const baseStyle = "flex items-center justify-center text-xl font-medium rounded-2xl transition-all duration-200 active:scale-95";
+    const variants = {
+      default: "bg-neutral-800 text-neutral-100 hover:bg-neutral-700",
+      operator: "bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30",
+      action: "bg-neutral-700 text-neutral-300 hover:bg-neutral-600",
+      equals: "bg-indigo-500 text-white hover:bg-indigo-400 shadow-lg shadow-indigo-500/25",
     };
-  }, [handleDelete, handleEquals, handlePercent, handleClick]);
+
+    return (
+      <button
+        onClick={onClick}
+        className={`\${baseStyle} \${variants[variant]} \${className} h-16`}
+      >
+        {children}
+      </button>
+    );
+  };
 
   return (
-    <div className="calculator w-full min-h-screen  text-red-400">
+    <div className="min-h-screen bg-neutral-950 text-neutral-50 font-sans md:pt-20 pt-16 flex flex-col relative overflow-hidden">
+      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
       <Navbar />
-      <main className="w-full flex-1 flex flex-col justify-center items-center mt-12 gap-4 bg-black  h-screen">
-        <h1 className="text-2xl lg:text-4xl">Calculatrice</h1>
-        <div className="flex flex-col items-center  border-2 px-4 py-6 lg:p-8 rounded-3xl justify-center bg-gray-800 bg-gradient-to-br from-gray-500 via-gray-700 to-gray-500">
-          <div className="h-12 w-full bg-white text-black justify-center text-2xl mb-8 flex items-center">
-            {display}
-          </div>
-          <div className="buttons w-64 lg:w-96 mx-auto">
-            <div className="grid grid-cols-4 gap-4">
-              <button className="border p-2" onClick={() => handleClick("1")}>
-                1
-              </button>
-              <button className="border p-2" onClick={() => handleClick("2")}>
-                2
-              </button>
-              <button className="border p-2" onClick={() => handleClick("3")}>
-                3
-              </button>
-              <button className="border p-2" onClick={() => handleClick("+")}>
-                +
-              </button>
-              <button className="border p-2" onClick={() => handleClick("4")}>
-                4
-              </button>
-              <button className="border p-2" onClick={() => handleClick("5")}>
-                5
-              </button>
-              <button className="border p-2" onClick={() => handleClick("6")}>
-                6
-              </button>
-              <button className="border p-2" onClick={() => handleClick("-")}>
-                -
-              </button>
-              <button className="border p-2" onClick={() => handleClick("7")}>
-                7
-              </button>
-              <button className="border p-2" onClick={() => handleClick("8")}>
-                8
-              </button>
-              <button className="border p-2" onClick={() => handleClick("9")}>
-                9
-              </button>
-              <button className="border p-2" onClick={() => handleClick("*")}>
-                *
-              </button>
-              <button className="border p-2" onClick={() => handleClick("0")}>
-                0
-              </button>
-              <button className="border p-2" onClick={handleClear}>
-                Clear
-              </button>
-              <button className="border p-2" onClick={() => handleClick(".")}>
-                .
-              </button>
-              <button className="border p-2" onClick={() => handleClick("/")}>
-                /
-              </button>
-              <button className="border p-2" onClick={() => handleEquals()}>
-                =
-              </button>
-              <button className="border p-2" onClick={() => handleDelete()}>
-                DEL
-              </button>
 
-              <button className="border p-2" onClick={() => handlePercent()}>
-                %
-              </button>
-              <button className="border p-2" onClick={() => handleNegative()}>
-                +/-
-              </button>
-            </div>
+      <main className="flex-1 flex flex-col items-center justify-center p-6 z-10 w-full max-w-sm mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="w-full bg-neutral-900/60 backdrop-blur-2xl border border-neutral-800 rounded-[2.5rem] p-6 shadow-2xl"
+        >
+          <div className="flex items-center gap-2 mb-6 text-indigo-400 pl-2">
+            <CalcIcon className="w-5 h-5" />
+            <span className="font-medium">Calculatrice</span>
           </div>
-        </div>
+
+          <div className="bg-neutral-950/50 border border-neutral-800 rounded-3xl p-6 mb-6 h-28 flex items-end justify-end overflow-hidden">
+            <span className="text-5xl font-light tracking-tight truncate">
+              {display || "0"}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-4 gap-3">
+            <Button variant="action" onClick={handleClear}>C</Button>
+            <Button variant="action" onClick={handleNegative}>+/-</Button>
+            <Button variant="action" onClick={handlePercent}>%</Button>
+            <Button variant="operator" onClick={() => handleClick("/")}>÷</Button>
+
+            <Button onClick={() => handleClick("7")}>7</Button>
+            <Button onClick={() => handleClick("8")}>8</Button>
+            <Button onClick={() => handleClick("9")}>9</Button>
+            <Button variant="operator" onClick={() => handleClick("*")}>×</Button>
+
+            <Button onClick={() => handleClick("4")}>4</Button>
+            <Button onClick={() => handleClick("5")}>5</Button>
+            <Button onClick={() => handleClick("6")}>6</Button>
+            <Button variant="operator" onClick={() => handleClick("-")}>−</Button>
+
+            <Button onClick={() => handleClick("1")}>1</Button>
+            <Button onClick={() => handleClick("2")}>2</Button>
+            <Button onClick={() => handleClick("3")}>3</Button>
+            <Button variant="operator" onClick={() => handleClick("+")}>+</Button>
+
+            <Button onClick={() => handleClick("0")} className="col-span-2">0</Button>
+            <Button onClick={() => handleClick(".")}>.</Button>
+            <Button variant="equals" onClick={handleEquals}>=</Button>
+          </div>
+        </motion.div>
       </main>
     </div>
   );

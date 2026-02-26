@@ -1,128 +1,152 @@
-import Checkbox from "@/components/Checkbox";
-import Modal from "@/components/Modal";
+import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
-import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { KeyRound, Copy, RefreshCcw, CheckCircle2 } from "lucide-react";
 
-
-const PasswordGenerator = () => {
-  const [password, setPassword] = React.useState<string>("");
-  const [length, setLength] = React.useState<number>(8);
-  const [uppercase, setUppercase] = React.useState<boolean>(true);
-  const [lowercase, setLowercase] = React.useState<boolean>(true);
-  const [numbers, setNumbers] = React.useState<boolean>(true);
-  const [specials, setSpecials] = React.useState<boolean>(true);
+export default function PasswordGenerator() {
+  const [password, setPassword] = useState("");
+  const [length, setLength] = useState(16);
+  const [options, setOptions] = useState({
+    uppercase: true,
+    lowercase: true,
+    numbers: true,
+    specials: true,
+  });
+  const [copied, setCopied] = useState(false);
 
   const generatePassword = () => {
-    let characters = "";
-    let generatedPassword = "";
+    let charset = "";
+    if (options.uppercase) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    if (options.lowercase) charset += "abcdefghijklmnopqrstuvwxyz";
+    if (options.numbers) charset += "0123456789";
+    if (options.specials) charset += "!@#$%^&*()_+~`|}{[]:;?><,./-=";
 
-    if (uppercase) {
-      characters += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    if (!charset) {
+      setPassword("Sélectionnez une option");
+      return;
     }
-    if (lowercase) {
-      characters += "abcdefghijklmnopqrstuvwxyz";
-    }
-    if (numbers) {
-      characters += "0123456789";
-    }
-    if (specials) {
-      characters += "!@#$%^&*()_+";
-    }
+
+    let newPassword = "";
+    const charsetLength = charset.length;
+
+    // Ensure cryptographically strong random values
+    const randomArray = new Uint32Array(length);
+    window.crypto.getRandomValues(randomArray);
 
     for (let i = 0; i < length; i++) {
-      generatedPassword += characters.charAt(
-        Math.floor(Math.random() * characters.length)
-      );
+      newPassword += charset[randomArray[i] % charsetLength];
     }
 
-    setPassword(generatedPassword);
+    setPassword(newPassword);
+    setCopied(false);
   };
 
-  const [showModal, setShowModal] = React.useState<boolean>(false);
+  useEffect(() => {
+    generatePassword();
+  }, [length, options]);
 
-  const openModal = () => {
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-  };
-
-  const copyPassword = () => {
-    if (!password) return;
+  const copyToClipboard = () => {
+    if (!password || password === "Sélectionnez une option") return;
     navigator.clipboard.writeText(password);
-
-    openModal();
-    setTimeout(() => {
-      closeModal();
-    }, 2000);
-
-   
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
+
+  const toggleOption = (key: keyof typeof options) => {
+    setOptions(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const CheckboxItem = ({ label, checked, onChange }: { label: string, checked: boolean, onChange: () => void }) => (
+    <label className="flex items-center justify-between p-4 rounded-xl bg-neutral-900/50 border border-neutral-800 hover:bg-neutral-800 transition-colors cursor-pointer group">
+      <span className="text-neutral-300 group-hover:text-white transition-colors">{label}</span>
+      <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-all duration-200 \${checked ? 'bg-emerald-500 border-emerald-500' : 'bg-neutral-950 border-neutral-700 border'}`}>
+        {checked && <CheckCircle2 className="w-4 h-4 text-white" />}
+      </div>
+      <input type="checkbox" className="hidden" checked={checked} onChange={onChange} />
+    </label>
+  );
 
   return (
-    // faire le générateur de mot de passe avec les fonctions ci-dessus
-    <>
-      <Modal
-        showModal={showModal}
-        closeModal={closeModal}
-        title="Mot de passe copié !"
-      />
-      <div className="flex flex-col w-full min-h-screen ">
-        <Navbar />
-        <main className="bg-black flex-1 flex items-center z-10">
-          <div className="bg-gray-800 bg-gradient-to-br from-gray-500 via-gray-700 to-gray-500 border-2 h-auto mt-20 p-6 flex flex-col justify-center items-center w-11/12 md:w-10/12 mx-auto lg:rounded-full text-red-400">
-            <h1 className="text-center text-2xl lg:text-4xl md:text-2xl font-bold mb-4 ">
-              Générateur de mot de passe
-            </h1>
-            <div className="flex flex-col items-center justify-center gap-4">
-              <div className="flex items-center gap-4">
-                <label htmlFor="length" className="">
-                  Longueur du mot de passe
-                </label>
-                <input
-                  type="number"
-                  id="length"
-                  className="border-2 border-gray-500 rounded-md p-2 text-gray-950 w-16"
-                  value={length}
-                  onChange={(e) => setLength(parseInt(e.target.value))}
-                />
-              </div>
-             
+    <div className="min-h-screen bg-neutral-950 text-neutral-50 font-sans md:pt-20 pt-16 flex flex-col relative overflow-hidden">
+      <div className="absolute top-1/3 left-1/3 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <Navbar />
 
-              <Checkbox label="Majuscules" checked={uppercase} onChange={(e) => setUppercase(e.target.checked)} />
-              <Checkbox label="Minuscules" checked={lowercase} onChange={(e) => setLowercase(e.target.checked)} />
-              <Checkbox label="Chiffres" checked={numbers} onChange={(e) => setNumbers(e.target.checked)} />
-              <Checkbox label="Caractères spéciaux" checked={specials} onChange={(e) => setSpecials(e.target.checked)} />
-              
-              <div className="flex items-center gap-4">
+      <main className="flex-1 flex flex-col items-center justify-center p-6 z-10 w-full max-w-xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full bg-neutral-900/40 backdrop-blur-xl border border-neutral-800 rounded-[2.5rem] p-8 shadow-2xl"
+        >
+          <div className="flex items-center gap-4 mb-8">
+            <div className="bg-emerald-500/10 text-emerald-500 p-3 rounded-2xl">
+              <KeyRound className="w-8 h-8" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white tracking-tight">Mot de passe</h1>
+              <p className="text-neutral-400">Générateur sécurisé</p>
+            </div>
+          </div>
+
+          <div className="relative mb-8 group">
+            <div className="absolute inset-0 bg-emerald-500/10 blur-xl rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative bg-neutral-950 border border-neutral-800 rounded-2xl p-4 flex items-center justify-between gap-4">
+              <input
+                type="text"
+                value={password}
+                readOnly
+                className="bg-transparent w-full text-2xl font-mono text-emerald-400 outline-none truncate"
+                placeholder="Mot de passe"
+              />
+              <div className="flex items-center gap-2">
                 <button
-                  className="border-2 border-gray-500 rounded-md p-2"
                   onClick={generatePassword}
+                  className="p-3 bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-white rounded-xl transition-all"
+                  title="Générer un nouveau mot de passe"
                 >
-                  Générer
+                  <RefreshCcw className="w-5 h-5" />
                 </button>
                 <button
-                  className="border-2 border-gray-500 rounded-md p-2"
-                  onClick={copyPassword}
+                  onClick={copyToClipboard}
+                  className={`p-3 rounded-xl transition-all flex items-center gap-2 \${
+                    copied 
+                      ? 'bg-emerald-500 text-white' 
+                      : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
+                  }`}
+                  title="Copier"
                 >
-                  Copier
+                  {copied ? <CheckCircle2 className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                 </button>
-              </div>
-              <div className="flex items-center gap-4">
-                <input
-                  type="text"
-                  className="border-2 border-gray-500 rounded-md p-2 text-gray-950"
-                  value={password}
-                  readOnly
-                />
               </div>
             </div>
           </div>
-        </main>
-      </div>
-    </>
-  );
-};
 
-export default PasswordGenerator;
+          <div className="space-y-6">
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <label className="text-neutral-300 font-medium">Longueur</label>
+                <span className="text-emerald-400 font-mono text-xl bg-emerald-500/10 px-3 py-1 rounded-lg">
+                  {length}
+                </span>
+              </div>
+              <input
+                type="range"
+                min="8"
+                max="64"
+                value={length}
+                onChange={(e) => setLength(parseInt(e.target.value))}
+                className="w-full accent-emerald-500 h-2 bg-neutral-800 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
+              <CheckboxItem label="Majuscules (A-Z)" checked={options.uppercase} onChange={() => toggleOption("uppercase")} />
+              <CheckboxItem label="Minuscules (a-z)" checked={options.lowercase} onChange={() => toggleOption("lowercase")} />
+              <CheckboxItem label="Chiffres (0-9)" checked={options.numbers} onChange={() => toggleOption("numbers")} />
+              <CheckboxItem label="Symboles (!@#$)" checked={options.specials} onChange={() => toggleOption("specials")} />
+            </div>
+          </div>
+        </motion.div>
+      </main>
+    </div>
+  );
+}
