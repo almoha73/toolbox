@@ -6,7 +6,7 @@ import { Calculator as CalcIcon, Delete, Equal, RotateCcw } from "lucide-react";
 export default function Calculator() {
   const [display, setDisplay] = useState("");
 
-  const handleClear = () => setDisplay("");
+  const handleClear = useCallback(() => setDisplay(""), []);
 
   const handleDelete = useCallback(() => {
     setDisplay((prev) => prev.slice(0, -1));

@@ -18,7 +18,7 @@ export default function Contact() {
             <h1 className="text-4xl font-bold mb-4 tracking-tight">Contactez-nous</h1>
             <p className="text-neutral-400">
               Une question, une suggestion ou une remarque sur la Toolbox ?
-              N'hésitez pas à nous envoyer un message.
+              N&apos;hésitez pas à nous envoyer un message.
             </p>
           </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
 import { KeyRound, Copy, RefreshCcw, CheckCircle2 } from "lucide-react";
@@ -14,7 +14,7 @@ export default function PasswordGenerator() {
   });
   const [copied, setCopied] = useState(false);
 
-  const generatePassword = () => {
+  const generatePassword = useCallback(() => {
     let charset = "";
     if (options.uppercase) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     if (options.lowercase) charset += "abcdefghijklmnopqrstuvwxyz";
@@ -39,11 +39,11 @@ export default function PasswordGenerator() {
 
     setPassword(newPassword);
     setCopied(false);
-  };
+  }, [length, options]);
 
   useEffect(() => {
     generatePassword();
-  }, [length, options]);
+  }, [generatePassword]);
 
   const copyToClipboard = () => {
     if (!password || password === "Sélectionnez une option") return;
