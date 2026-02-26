@@ -93,16 +93,16 @@ export default function Meteo() {
 
   const fetchWeatherFromCoords = async (lat: number, lon: number, cityName: string) => {
     try {
-      const url = \`https://api.open-meteo.com/v1/forecast?latitude=\${lat}&longitude=\${lon}&hourly=temperature_2m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&current_weather=true&timezone=auto\`;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&current_weather=true&timezone=auto`;
       const res = await fetch(url);
       const data = await res.json();
-      
+
       if (data.current_weather) {
         // Six hour forecast
         const currentIsoDate = data.current_weather.time.slice(0, 13); // e.g. "2026-02-26T20"
         let currentIndex = data.hourly.time.findIndex((t: string) => t.startsWith(currentIsoDate));
         if (currentIndex === -1) currentIndex = 0;
-        
+
         const sixHourForecast = [];
         for (let i = 1; i <= 6; i++) {
           const idx = currentIndex + i;
@@ -144,17 +144,17 @@ export default function Meteo() {
     if (!searchedCity.trim()) return;
 
     try {
-      const geoUrl = \`https://geocoding-api.open-meteo.com/v1/search?name=\${encodeURIComponent(searchedCity)}&count=1&language=fr\`;
+      const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(searchedCity)}&count=1&language=fr`;
       const geoRes = await fetch(geoUrl);
       const geoData = await geoRes.json();
-      
+
       if (geoData.results && geoData.results.length > 0) {
         const { latitude, longitude, name } = geoData.results[0];
-        
-        const weatherUrl = \`https://api.open-meteo.com/v1/forecast?latitude=\${latitude}&longitude=\${longitude}&current_weather=true&timezone=auto\`;
+
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=auto`;
         const weatherRes = await fetch(weatherUrl);
         const weatherData = await weatherRes.json();
-        
+
         if (weatherData.current_weather) {
           setSearchedWeather({
             temperature: Math.round(weatherData.current_weather.temperature * 10) / 10,
@@ -179,7 +179,7 @@ export default function Meteo() {
           const lon = position.coords.longitude;
           try {
             // Reverse geocode to get city name
-            const geoUrl = \`https://nominatim.openstreetmap.org/reverse?lat=\${lat}&lon=\${lon}&format=json&accept-language=fr\`;
+            const geoUrl = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=fr`;
             const geoRes = await fetch(geoUrl, { headers: { "User-Agent": "Toolbox-App/1.0" } });
             const geoData = await geoRes.json();
             const cityName = geoData.address?.city || geoData.address?.town || geoData.address?.village || "Ma position";
