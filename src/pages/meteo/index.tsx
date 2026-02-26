@@ -1,60 +1,89 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Navbar from "@/components/Navbar";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { CloudSun, Search, MapPin, Thermometer, Clock3 } from "lucide-react";
-import { translateWeatherDescription } from "../../utils/weatherUtils";
+import {
+  CloudSun, Search, MapPin, Thermometer, Clock3,
+  Sun, Cloud, CloudFog, CloudDrizzle, CloudRain, CloudSnow, CloudLightning
+} from "lucide-react";
 
 interface WeatherItem {
   temperature: number | null;
   heure: number | null;
-  description: string | undefined;
-  icon: string | null;
+  description: string;
+  code: number | null;
 }
-
-const defaultWeatherItem: WeatherItem = {
-  heure: null,
-  temperature: null,
-  description: undefined,
-  icon: null,
-};
-
-const initialSixHourWeather: WeatherItem[] = Array(6).fill(defaultWeatherItem);
 
 interface Weather {
   tempMin: number | null;
   tempMax: number | null;
-  jour: number | null;
-  description: string | undefined;
-  icon: string | null;
+  jour: string | null;
+  description: string;
+  code: number | null;
 }
 
-const defaultWeather: Weather = {
+const getWeatherIcon = (code: number | null, props: any) => {
+  if (code === null) return <Cloud {...props} />;
+  if (code === 0) return <Sun {...props} />;
+  if (code >= 1 && code <= 3) return <CloudSun {...props} />;
+  if (code === 45 || code === 48) return <CloudFog {...props} />;
+  if ([51, 53, 55, 56, 57].includes(code)) return <CloudDrizzle {...props} />;
+  if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return <CloudRain {...props} />;
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return <CloudSnow {...props} />;
+  if ([95, 96, 99].includes(code)) return <CloudLightning {...props} />;
+  return <Cloud {...props} />;
+};
+
+const getWeatherDescription = (code: number | null) => {
+  if (code === null) return "";
+  switch (code) {
+    case 0: return "Ciel dégagé";
+    case 1: return "Principalement clair";
+    case 2: return "Partiellement nuageux";
+    case 3: return "Couvert";
+    case 45: case 48: return "Brouillard";
+    case 51: case 53: case 55: return "Bruine";
+    case 56: case 57: return "Bruine verglaçante";
+    case 61: case 63: case 65: return "Pluie";
+    case 66: case 67: return "Pluie verglaçante";
+    case 71: case 73: case 75: return "Chute de neige";
+    case 77: return "Grains de neige";
+    case 80: case 81: case 82: return "Averses de pluie";
+    case 85: case 86: return "Averses de neige";
+    case 95: return "Orage";
+    case 96: case 99: return "Orage grêle";
+    default: return "Inconnu";
+  }
+};
+
+const initialSixHourWeather: WeatherItem[] = Array(6).fill({
+  heure: null,
+  temperature: null,
+  description: "",
+  code: null,
+});
+
+const initialWeather: Weather[] = Array(7).fill({
   tempMin: null,
   tempMax: null,
   jour: null,
-  description: undefined,
-  icon: null,
-};
-
-const initialWeather: Weather[] = Array(8).fill(defaultWeather);
+  description: "",
+  code: null,
+});
 
 export default function Meteo() {
   const [city, setCity] = useState("Localisation...");
-  const [lat, setLat] = useState<number | null>(null);
-  const [lon, setLon] = useState<number | null>(null);
   const [searchedCity, setSearchedCity] = useState("");
   const [lastSearchedCity, setLastSearchedCity] = useState("");
 
   const [searchedWeather, setSearchedWeather] = useState<{
     temperature: number | null;
-    description: string | undefined;
-    icon: string | null;
+    description: string;
+    code: number | null;
     heure: number | null;
   }>({
     temperature: null,
-    description: undefined,
-    icon: null,
+    description: "",
+    code: null,
     heure: null,
   });
 
@@ -62,25 +91,80 @@ export default function Meteo() {
   const [weather, setWeather] = useState<Weather[]>(initialWeather);
   const [loading, setLoading] = useState(true);
 
-  const apiKey = "1e13ef02fc68057b2d90d17a5fbe1a22";
+  const fetchWeatherFromCoords = async (lat: number, lon: number, cityName: string) => {
+    try {
+      const url = \`https://api.open-meteo.com/v1/forecast?latitude=\${lat}&longitude=\${lon}&hourly=temperature_2m,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&current_weather=true&timezone=auto\`;
+      const res = await fetch(url);
+      const data = await res.json();
+      
+      if (data.current_weather) {
+        // Six hour forecast
+        const currentIsoDate = data.current_weather.time.slice(0, 13); // e.g. "2026-02-26T20"
+        let currentIndex = data.hourly.time.findIndex((t: string) => t.startsWith(currentIsoDate));
+        if (currentIndex === -1) currentIndex = 0;
+        
+        const sixHourForecast = [];
+        for (let i = 1; i <= 6; i++) {
+          const idx = currentIndex + i;
+          if (idx < data.hourly.time.length) {
+            sixHourForecast.push({
+              heure: new Date(data.hourly.time[idx]).getHours(),
+              temperature: Math.round(data.hourly.temperature_2m[idx] * 10) / 10,
+              description: getWeatherDescription(data.hourly.weathercode[idx]),
+              code: data.hourly.weathercode[idx]
+            });
+          }
+        }
+        setSixHourWeather(sixHourForecast);
+
+        // Daily forecast
+        const dailyForecast = [];
+        for (let i = 0; i < data.daily.time.length && i < 7; i++) {
+          const dayDate = new Date(data.daily.time[i]);
+          dailyForecast.push({
+            jour: dayDate.toLocaleDateString("fr-FR", { weekday: "long" }),
+            tempMax: Math.round(data.daily.temperature_2m_max[i] * 10) / 10,
+            tempMin: Math.round(data.daily.temperature_2m_min[i] * 10) / 10,
+            description: getWeatherDescription(data.daily.weathercode[i]),
+            code: data.daily.weathercode[i]
+          });
+        }
+        setWeather(dailyForecast);
+        setCity(cityName);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchSearchedWeather = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!searchedCity.trim()) return;
 
-    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=\${searchedCity}&appid=\${apiKey}&units=metric`;
     try {
-      const response = await fetch(apiUrl);
-      const data = await response.json();
-      if (data.cod === 200) {
-        setSearchedWeather({
-          temperature: parseFloat(data.main.temp).toFixed(1) as any as number,
-          description: data.weather[0].description,
-          icon: data.weather[0].icon,
-          heure: new Date(data.dt * 1000).getHours(),
-        });
-        setLastSearchedCity(searchedCity.charAt(0).toUpperCase() + searchedCity.slice(1));
-        setSearchedCity("");
+      const geoUrl = \`https://geocoding-api.open-meteo.com/v1/search?name=\${encodeURIComponent(searchedCity)}&count=1&language=fr\`;
+      const geoRes = await fetch(geoUrl);
+      const geoData = await geoRes.json();
+      
+      if (geoData.results && geoData.results.length > 0) {
+        const { latitude, longitude, name } = geoData.results[0];
+        
+        const weatherUrl = \`https://api.open-meteo.com/v1/forecast?latitude=\${latitude}&longitude=\${longitude}&current_weather=true&timezone=auto\`;
+        const weatherRes = await fetch(weatherUrl);
+        const weatherData = await weatherRes.json();
+        
+        if (weatherData.current_weather) {
+          setSearchedWeather({
+            temperature: Math.round(weatherData.current_weather.temperature * 10) / 10,
+            description: getWeatherDescription(weatherData.current_weather.weathercode),
+            code: weatherData.current_weather.weathercode,
+            heure: new Date(weatherData.current_weather.time).getHours(),
+          });
+          setLastSearchedCity(name);
+          setSearchedCity("");
+        }
       }
     } catch (error) {
       console.error(error);
@@ -91,60 +175,29 @@ export default function Meteo() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
-          setLat(position.coords.latitude);
-          setLon(position.coords.longitude);
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
           try {
-            const response = await fetch(
-              `http://api.openweathermap.org/geo/1.0/reverse?lat=\${position.coords.latitude}&lon=\${position.coords.longitude}&appid=\${apiKey}`
-            );
-            const data = await response.json();
-            if (data && data[0]) setCity(data[0].name);
+            // Reverse geocode to get city name
+            const geoUrl = \`https://nominatim.openstreetmap.org/reverse?lat=\${lat}&lon=\${lon}&format=json&accept-language=fr\`;
+            const geoRes = await fetch(geoUrl, { headers: { "User-Agent": "Toolbox-App/1.0" } });
+            const geoData = await geoRes.json();
+            const cityName = geoData.address?.city || geoData.address?.town || geoData.address?.village || "Ma position";
+            fetchWeatherFromCoords(lat, lon, cityName);
           } catch (e) {
-            console.error(e);
+            fetchWeatherFromCoords(lat, lon, "Ma position");
           }
         },
         () => {
-          setCity("Géolocalisation désactivée");
-          setLoading(false);
-        }
+          // Fallback to Paris if geolocation is denied
+          fetchWeatherFromCoords(48.8534, 2.3488, "Paris");
+        },
+        { timeout: 5000 }
       );
+    } else {
+      fetchWeatherFromCoords(48.8534, 2.3488, "Paris");
     }
   }, []);
-
-  useEffect(() => {
-    if (lat && lon) {
-      const apiUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=\${lat}&lon=\${lon}&appid=\${apiKey}&units=metric&lang=fr`;
-      fetch(apiUrl)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.hourly) {
-            const sixHourForecast = data.hourly.slice(0, 6).map((hour: any) => ({
-              heure: new Date(hour.dt * 1000).getHours(),
-              temperature: parseFloat(hour.temp).toFixed(1),
-              description: hour.weather[0].description,
-              icon: hour.weather[0].icon,
-            }));
-            setSixHourWeather(sixHourForecast);
-          }
-
-          if (data.daily) {
-            const dailyForecast = data.daily.slice(0, 8).map((day: any) => ({
-              jour: new Date(day.dt * 1000).toLocaleDateString("fr-FR", { weekday: "long" }),
-              tempMin: parseFloat(day.temp.min).toFixed(1),
-              tempMax: parseFloat(day.temp.max).toFixed(1),
-              description: day.weather[0].description,
-              icon: day.weather[0].icon,
-            }));
-            setWeather(dailyForecast);
-          }
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error(error);
-          setLoading(false);
-        });
-    }
-  }, [lat, lon]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -187,7 +240,7 @@ export default function Meteo() {
         </header>
 
         <AnimatePresence>
-          {lastSearchedCity && searchedWeather.temperature && (
+          {lastSearchedCity && searchedWeather.temperature !== null && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
@@ -198,19 +251,13 @@ export default function Meteo() {
                 <div>
                   <h2 className="text-2xl font-semibold mb-2">{lastSearchedCity}</h2>
                   <p className="text-amber-200/80 capitalize flex items-center gap-2">
-                    <Clock3 className="w-4 h-4" /> {searchedWeather.heure}h00 • {translateWeatherDescription(searchedWeather.description ?? "")}
+                    <Clock3 className="w-4 h-4" /> {searchedWeather.heure}h00 • {searchedWeather.description}
                   </p>
                 </div>
                 <div className="flex items-center gap-6">
-                  {searchedWeather.icon && (
-                    <Image
-                      src={`http://openweathermap.org/img/w/\${searchedWeather.icon}.png`}
-                      alt="weather icon"
-                      width={80}
-                      height={80}
-                      className="drop-shadow-lg"
-                    />
-                  )}
+                  <div className="text-amber-500 drop-shadow-lg">
+                    {getWeatherIcon(searchedWeather.code, { className: "w-20 h-20" })}
+                  </div>
                   <div className="text-5xl font-bold tabular-nums tracking-tighter">
                     {searchedWeather.temperature}°
                   </div>
@@ -245,18 +292,12 @@ export default function Meteo() {
                       className="bg-neutral-900/40 backdrop-blur-md border border-neutral-800 rounded-2xl p-5 flex flex-col items-center text-center hover:bg-neutral-800/60 transition-colors"
                     >
                       <span className="text-neutral-400 font-medium mb-3">{item.heure}h</span>
-                      {item.icon && (
-                        <Image
-                          src={`http://openweathermap.org/img/w/\${item.icon}.png`}
-                          alt="weather icon"
-                          width={60}
-                          height={60}
-                          className="mb-2"
-                        />
-                      )}
+                      <div className="mb-2 text-amber-500">
+                        {getWeatherIcon(item.code, { className: "w-10 h-10 mx-auto" })}
+                      </div>
                       <span className="text-2xl font-bold mb-1">{item.temperature}°</span>
                       <span className="text-xs text-neutral-500 capitalize line-clamp-1">
-                        {translateWeatherDescription(item.description || "")}
+                        {item.description}
                       </span>
                     </motion.div>
                   )
@@ -267,7 +308,7 @@ export default function Meteo() {
             <section>
               <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                 <Thermometer className="w-5 h-5 text-neutral-400" />
-                Prévisions sur 8 jours
+                Prévisions sur 7 jours
               </h2>
               <motion.div
                 variants={containerVariants}
@@ -286,15 +327,9 @@ export default function Meteo() {
                         <span className="font-semibold capitalize text-lg">
                           {i === 0 ? "Aujourd'hui" : i === 1 ? "Demain" : item.jour}
                         </span>
-                        {item.icon && (
-                          <Image
-                            src={`http://openweathermap.org/img/w/\${item.icon}.png`}
-                            alt="weather icon"
-                            width={50}
-                            height={50}
-                            className="drop-shadow"
-                          />
-                        )}
+                        <div className="text-amber-500 drop-shadow">
+                          {getWeatherIcon(item.code, { className: "w-8 h-8" })}
+                        </div>
                       </div>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
@@ -302,7 +337,7 @@ export default function Meteo() {
                           <span className="text-lg font-medium text-neutral-500">/ {item.tempMin}°</span>
                         </div>
                         <p className="text-sm text-neutral-400 capitalize">
-                          {translateWeatherDescription(item.description || "")}
+                          {item.description}
                         </p>
                       </div>
                     </motion.div>
